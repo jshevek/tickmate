@@ -2,7 +2,12 @@ package de.smasi.tickmate.widgets;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Toast;
@@ -17,17 +22,37 @@ import de.smasi.tickmate.models.Track;
 
 public class TickButton extends ToggleButton implements OnCheckedChangeListener {
 
-    Track track;
-    TracksDataSource ds;
-    Calendar date;
+    private Track mTrack;
+    private TracksDataSource mDataSource;
+    private Calendar mDate;
+
+    private LayerDrawable mTickedDrawable;
+    private Drawable mUnTickedDrawable;
 
     public TickButton(Context context, Track track, Calendar date, TracksDataSource ds) {
         super(context);
 
-        this.track = track;
-        this.date = (Calendar)date.clone();
+        // Prepare the layers & color filter for the LayerDrawable
+        ColorFilter cf = new LightingColorFilter(0xFFFFFF, 0xFF0000);  // TODO use a non-hardcoded value for the color (int add)
+        // ^^ TODO Consider whether other color filters, or other multiplier values, would serve us better
+        Drawable buttonCenterDrawable = ContextCompat.getDrawable(getContext(), R.drawable.tick_button_center_no_frame_64);
+        Drawable buttonBorderDrawable = ContextCompat.getDrawable(getContext(), R.drawable.tick_button_frame_64);
+        buttonCenterDrawable.setColorFilter(cf);
+
+        mUnTickedDrawable = ContextCompat.getDrawable(getContext(), R.drawable.off_64);
+        mTickedDrawable = new LayerDrawable(new Drawable[] { buttonCenterDrawable , buttonBorderDrawable} );
+
+        mTrack = track;
+        mDate = (Calendar)date.clone();
         //this.setLayoutParams(new android.widget.LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 20));
-        this.setBackgroundResource(R.drawable.toggle_button);
+
+        /////////
+        // TODO Look for dynamic color solution which uses xml:
+        // I don't know if its possible to do both at the same time: (a) use an xml selector
+        // to give us a state-dependant ([un]checked) Drawable, and (b) programmatically control the color
+        //  using a ColorFilter.  Therefore I'm no longer using toggle_button.xml  -js
+//        this.setBackgroundResource(R.drawable.toggle_button);
+
         int size = 32;
         this.setWidth(size);
         this.setMinWidth(size);
@@ -39,19 +64,20 @@ public class TickButton extends ToggleButton implements OnCheckedChangeListener 
         this.setTextOff("");
         //this.setAlpha((float) 0.8);
 
-        this.ds = ds;
+        mDataSource = ds;
 
         setChecked(ds.isTicked(track, date, false));
         this.setOnCheckedChangeListener(this);
 
+        setBackgroundDrawable(isChecked() ? mTickedDrawable : mUnTickedDrawable);
     }
 
-    public Track getTrack () {
-        return track;
+    public Track getTrack() {
+        return mTrack;
     }
 
     public Calendar getDate () {
-        return date;
+        return mDate;
     }
 
     // Evaluates whether this TickButton should be check-able.
@@ -70,11 +96,11 @@ public class TickButton extends ToggleButton implements OnCheckedChangeListener 
 
         switch (limitActivePref) {
             case "ALLOW_CURRENT":
-                return (date.compareTo(today) == 0);
+                return (mDate.compareTo(today) == 0);
             case "ALLOW_CURRENT_AND_NEXT_DAY":
                 Calendar yesterday = (Calendar) today.clone();
                 yesterday.add(Calendar.DATE, -1);
-                return (date.compareTo(yesterday) >= 0);
+                return (mDate.compareTo(yesterday) >= 0);
             case "ALLOW_ALL":
             default:
                 return true;
@@ -88,16 +114,15 @@ public class TickButton extends ToggleButton implements OnCheckedChangeListener 
             Toast.makeText(getContext(), R.string.notify_user_ticking_disabled, Toast.LENGTH_LONG).show();
             return;
         }
-
         TickButton tb = (TickButton)arg0;
 
         TracksDataSource ds = new TracksDataSource(this.getContext());
         if (ticked) {
             ds.setTick(tb.getTrack(), tb.getDate(), true);
-        }
-        else {
+            setBackgroundDrawable(mUnTickedDrawable);  // Using getConstantState().newDrawable() caused bug
+        } else {
             ds.removeTick(tb.getTrack(), tb.getDate());
+            setBackgroundDrawable(mTickedDrawable);
         }
     }
-
 }

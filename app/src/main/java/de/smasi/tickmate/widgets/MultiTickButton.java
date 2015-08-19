@@ -1,6 +1,11 @@
 package de.smasi.tickmate.widgets;
 
 import android.content.Context;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -33,7 +38,9 @@ public class MultiTickButton extends Button implements OnClickListener, OnLongCl
 		this.setMinHeight(size);
 		this.setPadding(0, 0, 0, 0);
 		this.ds = ds;
+		// TODO following two lines have some redundancy
 		setTickCount(ds.getTickCountForDay(track, date));
+		updateStatus();
 	}
 	
 	Track getTrack () {
@@ -52,15 +59,40 @@ public class MultiTickButton extends Button implements OnClickListener, OnLongCl
 	private void updateStatus() {
 		TracksDataSource ds = new TracksDataSource(this.getContext());
 		count = ds.getTicksForDay(this.getTrack(), this.getDate()).size();
+		updateImage();
 		updateText();
 	}
-	
-	private void updateText() {		
+
+	// This method is introduced to allow control of the tick color; it replaces functionality
+	//  previously achieved with an xml selector
+	private void updateImage() {
+		// Consider  using setImageTintList(new ColorStateList(states, colors));
+		//  where the states are [-]stated_checked.  Disadvantage:  limited API levels. Compat library?
+
 		if (count > 0) {
-			this.setBackgroundResource(R.drawable.counter_positive);
-			this.setText(Integer.toString(count));
+			// TODO consider creating final static drawables (to use as is, or to copy via
+			//     getConstantState().newDrawable()) rather than creating on each call
+			ColorFilter cf = new LightingColorFilter(0xFFFFFF, 0xAA0000);
+			Drawable buttonCenterDrawable = ContextCompat.getDrawable(getContext(), R.drawable.tick_button_center_no_frame_64);
+			Drawable buttonBorderDrawable = ContextCompat.getDrawable(getContext(), R.drawable.tick_button_frame_64);
+			buttonCenterDrawable.setColorFilter(cf);
+			LayerDrawable buttonCombined = new LayerDrawable(new Drawable[]{buttonCenterDrawable, buttonBorderDrawable});
+
+			int sdk = android.os.Build.VERSION.SDK_INT;
+			if(sdk < android.os.Build.VERSION_CODES.JELLY_BEAN) {
+				setBackgroundDrawable(buttonCombined);
+			} else {
+				setBackground(buttonCombined);
+			}
 		} else {
 			this.setBackgroundResource(R.drawable.counter_neutral);
+		}
+	}
+
+	private void updateText() {
+		if (count > 0) {
+			this.setText(Integer.toString(count));
+		} else {
 			this.setText("");
 		}
 	}
