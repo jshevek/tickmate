@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.smasi.tickmate.models.Group;
 import de.smasi.tickmate.models.Tick;
 import de.smasi.tickmate.models.Track;
 
@@ -25,7 +26,7 @@ public class TracksDataSource {
 	private SQLiteDatabase database;
 	private DatabaseOpenHelper dbHelper;
 	
-	private String[] allColumns = {
+	private final String[] allColumns = {
 			DatabaseOpenHelper.COLUMN_ID,
 			DatabaseOpenHelper.COLUMN_NAME,
 			DatabaseOpenHelper.COLUMN_ENABLED,
@@ -34,7 +35,7 @@ public class TracksDataSource {
 			DatabaseOpenHelper.COLUMN_MULTIPLE_ENTRIES_PER_DAY,
 			"\"" + DatabaseOpenHelper.COLUMN_ORDER + "\""
 	};
-	private String[] allColumnsTicks = {
+	private final String[] allColumnsTicks = {
 			DatabaseOpenHelper.COLUMN_ID,
 			DatabaseOpenHelper.COLUMN_TRACK_ID,
 			DatabaseOpenHelper.COLUMN_YEAR,
@@ -44,7 +45,10 @@ public class TracksDataSource {
 			DatabaseOpenHelper.COLUMN_MINUTE,
 			DatabaseOpenHelper.COLUMN_SECOND
 	};
-	
+	private final String[] allColumnsGroups = {
+			DatabaseOpenHelper.COLUMN_ID,
+			DatabaseOpenHelper.COLUMN_NAME
+	};
 	List<Tick> ticks;
 
 	public TracksDataSource(Context context) {
@@ -111,8 +115,45 @@ public class TracksDataSource {
 		
 		return tracks;
 	}
-	
-	public List<Track> getActiveTracks() {
+
+	public List<Group> getGroups() {
+		List<Group> groups = new ArrayList<Group>();
+
+		this.open();
+
+		Cursor cursor = database.query(DatabaseOpenHelper.TABLE_GROUPS,
+				allColumnsGroups, null, null, null, null,
+				"\"" + DatabaseOpenHelper.COLUMN_ORDER + "\" ASC", null);
+
+		cursor.moveToFirst();
+		while (!cursor.isAfterLast()) {
+			groups.add(cursorToGroup(cursor));
+			cursor.moveToNext();
+		}
+		// Make sure to close the cursor
+		cursor.close();
+
+		return groups;
+	}
+
+    public List<Group> getGroupsForTrack(Track track) {
+        // TODO
+        return null;
+    }
+
+    public void addGroupToTrack(Track track, Group group) {
+        // TODO
+    }
+
+    public void removeGroupFromTrack(Track track, Group group) {
+        // TODO
+    }
+
+    public void saveGroup(Group group) {
+        // TODO
+    }
+
+    public List<Track> getActiveTracks() {
 		List<Track> tracks = new ArrayList<Track>();
 		this.open();
 
@@ -278,6 +319,12 @@ public class TracksDataSource {
 		track.setOrder(cursor.getInt(6));
 		return track;
 	}
+
+    private Group cursorToGroup(Cursor cursor) {
+        Group group = new Group(cursor.getString(1));
+        group.setId(cursor.getInt(0));
+        return group;
+    }
 	
 	private Tick cursorToTick(Cursor cursor) {
 		Calendar c = Calendar.getInstance();
