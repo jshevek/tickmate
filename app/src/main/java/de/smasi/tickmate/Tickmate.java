@@ -10,17 +10,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.v4.widget.DrawerLayout;
 import android.text.Editable;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -41,6 +45,9 @@ import lab.prada.android.ui.infinitescroll.InfiniteScrollAdapter;
 public class Tickmate extends ListActivity implements InfiniteScrollAdapter.InfiniteScrollListener, View.OnClickListener {
     static final int DATE_DIALOG_ID = 0;
     private static final String TAG = "Tickmate";
+    private String[] mNavDrawerTitles;  // TODO JS not sure if we need this
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
 
     private InfiniteScrollAdapter<TickAdapter> mAdapter;
     private Handler mHandler;
@@ -52,8 +59,20 @@ public class Tickmate extends ListActivity implements InfiniteScrollAdapter.Infi
         //setContentView(R.layout.fragment_tickmate_ticks);
 		//matrix = (TickMatrix)findViewById(R.id.tickMatrix1);
         setContentView(R.layout.activity_tickmate_list);
-        
-		Calendar today = Calendar.getInstance();
+//        setContentView(R.layout.navigation_drawer);
+
+
+        // Initialize the navigation drawer
+        mNavDrawerTitles = getResources().getStringArray(R.array.navigation_drawer_array);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        // Set the adapter for the list view
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+                R.layout.drawer_list_item, mNavDrawerTitles));
+        // Set the list's click listener
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+
+        Calendar today = Calendar.getInstance();
 		
         RelativeLayout progress = new RelativeLayout(this);
         progress.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, 100));
@@ -339,5 +358,32 @@ public class Tickmate extends ListActivity implements InfiniteScrollAdapter.Infi
         }, 500);
     }
 
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
+
+    private void selectItem(int position) {
+        Log.e(TAG, "selectItem");
+        Toast.makeText(this, "Navigate to " + mNavDrawerTitles[position], Toast.LENGTH_LONG).show();
+        // TODO most likely convert the whole to use fragments instead of activities, load the fragments here
+
+        switch (mNavDrawerTitles[position]) {
+            case "Tracks":  // TODO In final version, do not use inline strings here. Use enums or constants or other
+                editTracks(getCurrentFocus());
+                break;
+            case "Groups":
+                editGroups();
+                break;
+            case "Settings":
+                settingsActivity();
+                break;
+            default:
+                Log.e(TAG, "Error in selectItem");
+        }
+
+    }
 
 }
