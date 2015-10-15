@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.preference.MultiSelectListPreference;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -70,7 +69,7 @@ public class GroupListPreference extends MultiSelectListPreference {
         for (Group g : mDataSource.getGroupsForTrack(track.getId())) {
             ids.add(Integer.toString(g.getId()));
         }
-        Log.d(TAG, "getGroupIdsForTrackAsSet is returning: " + TextUtils.join(",", ids));
+//        Log.d(TAG, "getGroupIdsForTrackAsSet is returning: " + TextUtils.join(",", ids));
         return ids;
     }
 
@@ -82,7 +81,7 @@ public class GroupListPreference extends MultiSelectListPreference {
             names.add(g.getName());
         }
         CharSequence[] cs = names.toArray(new CharSequence[names.size()]);
-        Log.d(TAG, "getAllGroupNamesAsCharSeq is returning: " + TextUtils.join(",", cs));
+//        Log.d(TAG, "getAllGroupNamesAsCharSeq is returning: " + TextUtils.join(",", cs));
         return cs;
     }
 
@@ -94,7 +93,7 @@ public class GroupListPreference extends MultiSelectListPreference {
             ids.add(String.valueOf(g.getId()));
         }
         CharSequence[] cs = ids.toArray(new CharSequence[ids.size()]);
-        Log.d(TAG, "getAllGroupIdsAsCharSeq is returning: " + TextUtils.join(",", cs));
+//        Log.d(TAG, "getAllGroupIdsAsCharSeq is returning: " + TextUtils.join(",", cs));
         return cs;
     }
 

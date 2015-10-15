@@ -1,5 +1,8 @@
 package de.smasi.tickmate.views;
 
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import de.smasi.tickmate.R;
 import de.smasi.tickmate.database.DataSource;
 import de.smasi.tickmate.models.Track;
 import de.smasi.tickmate.widgets.GroupListPreference;
+import de.smasi.tickmate.widgets.LauncherAction;
 
 public class TrackPreferenceFragment extends PreferenceFragment implements
 OnSharedPreferenceChangeListener  {
@@ -30,12 +34,15 @@ OnSharedPreferenceChangeListener  {
     private CheckBoxPreference multiple_entries_enabled;
 	private IconPreference icon;
     private GroupListPreference mGroupsPref;
+    private Preference mLauncherActionPreference;
     private static DataSource mDataSource = DataSource.getInstance();
+
+    // indicates to onActivityResult that user selected an app for the launcher
+    private final static int REQUEST_CODE_DEFINE_LAUNCH_APP = 1001;  
 
     public TrackPreferenceFragment() {
         super();
     }
-
 
 
     @Override
@@ -45,13 +52,40 @@ OnSharedPreferenceChangeListener  {
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.track_preferences);
 
-
         track_id = getArguments().getInt("track_id");
         Log.d(TAG, "onCreate given track id " + track_id);
         track = mDataSource.getTrack(track_id);
         Log.d(TAG, " retrieved track with id = " + track.getId());
 		loadTrack();
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        Log.d(TAG, "onActivityResult(" + requestCode + ", " + resultCode + ", " + data + ")");
+        switch (requestCode) {
+            case REQUEST_CODE_DEFINE_LAUNCH_APP:
+                if (resultCode == Activity.RESULT_OK) {
+//                    Log.d(TAG, "Data: " + data.getAction() + "\n" +
+//                                    data.getExtras() + "\n" +
+//                                    data.getCategories() + "\n" +
+//                                    data.getComponent() + "\n" +
+//                                    data.getComponent().getPackageName() + "\n" +
+//                                    data.getComponent().getClassName() + "\n"
+//                    );
+
+                    ComponentName c = data.getComponent();
+                    track.setLauncherComponent(c);
+                    DataSource.getInstance().storeTrack(track);
+
+                    //  OnSharedPreferenceChanged has been bypassed, so do this here:
+                    mLauncherActionPreference.setSummary(track.getLauncherSummary());
+
+                }
+                break;
+        }
+//        super.onActivityResult(requestCode, resultCode, data);  // TODO is this needed?
+    }
+
 
 	private void loadTrack() {
         Log.d(TAG, "Loading track #" + track.getId());
@@ -75,6 +109,37 @@ OnSharedPreferenceChangeListener  {
         mGroupsPref = (GroupListPreference) findPreference("groups");
         mGroupsPref.setTrack(track);
         mGroupsPref.populate();
+
+        mLauncherActionPreference = findPreference(LauncherAction.sPreferenceKeyLauncherActionDetail);
+        mLauncherActionPreference.setSummary(track.getLauncherSummary());
+
+        mLauncherActionPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                // This allows us to select an app.  May implement 'select a file to open' later.
+                Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+                mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                Intent pickIntent = new Intent(Intent.ACTION_PICK_ACTIVITY);
+                pickIntent.putExtra(Intent.EXTRA_INTENT, mainIntent);
+                startActivityForResult(pickIntent, REQUEST_CODE_DEFINE_LAUNCH_APP);
+                return true;
+            }
+        });
+
+
+//        // TODO following stanze to be removed after testing
+//        Preference launchTest = findPreference("launcher_action_button");
+//        launchTest.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//            @Override
+//            public boolean onPreferenceClick(Preference preference) {
+//                Log.d(TAG, "onPreferenceClick");
+//                Toast.makeText(getActivity(), "Testing activity launcher", Toast.LENGTH_LONG).show();
+//                LauncherAction.launchComponent(getActivity(), track.getLauncherComponent());
+//                return true;
+//            }
+//        });
+
+
     }
 
     public void onResume() {
@@ -142,7 +207,21 @@ OnSharedPreferenceChangeListener  {
 //            Log.d(TAG, "Confirm that the group IDs are correct: " + TextUtils.join(",", track.getGroupIdsAsSet()));
 //            Log.d(TAG, "Confirm that the group NAMES are correct: " + TextUtils.join(",", track.getGroupNamesAsSet()));
 
+// TODO Confirm this is not needed then remove:
+//        } else if (pref.equals(mLauncherActionPreference)) { // TODO will this ever even be reached, since this is handled by the callback?
+//            // TODO JS Store the launch action info in track
+//            updateLauncherRelatedPreferenceItems();
         }
         mDataSource.storeTrack(track);
     }
+
+// TODO Confirm not needed and remove:
+//    protected void updateLauncherRelatedPreferenceItems() {
+//        if (mLauncherActionPreference == null) {
+//            mLauncherActionPreference = findPreference(LauncherAction.sPreferenceKeyLauncherActionDetail);
+//        }
+////        mLauncherActionPreference.setSummary("++" + track.getLauncherAction().getActionDetailForDatabase());
+//        mLauncherActionPreference.setSummary("TODO");
+//    }
+
 }

@@ -32,4 +32,17 @@
         android:title="@string/pref_title_groups"
         />
 
+
+    <!-- TODO JS Rename the title and move the title string into strings.xml -->
+    <Preference
+        android:key="launcher_action_detail"
+        android:title="App to launch"
+        />
+
+    <!--  TODO Remove when no longer needed - this is a temp item simply for testing purposes -->
+    <!--<Preference-->
+        <!--android:key="launcher_action_button"-->
+        <!--android:title="Test the launcher"-->
+        <!--/>-->
+
 </PreferenceScreen>

@@ -19,6 +19,7 @@ import de.smasi.tickmate.Globals;
 import de.smasi.tickmate.models.Group;
 import de.smasi.tickmate.models.Tick;
 import de.smasi.tickmate.models.Track;
+import de.smasi.tickmate.widgets.LauncherAction;
 
 public class DataSource {
     private static final String TAG = "DataSource";
@@ -37,6 +38,7 @@ public class DataSource {
 			DatabaseOpenHelper.COLUMN_DESCRIPTION,
 			DatabaseOpenHelper.COLUMN_ICON,
 			DatabaseOpenHelper.COLUMN_MULTIPLE_ENTRIES_PER_DAY,
+            DatabaseOpenHelper.COLUMN_LAUNCH_ACTION_INFO,
 			"\"" + DatabaseOpenHelper.COLUMN_ORDER + "\""
 	};
 
@@ -545,7 +547,8 @@ public class DataSource {
 		track.setEnabled(cursor.getInt(2) >= 1);
 		track.setMultipleEntriesEnabled(cursor.getInt(5) >= 1);
 		track.setIcon(cursor.getString(4));
-		track.setOrder(cursor.getInt(6));
+        track.setLauncherAction(LauncherAction.unflattenFromString(cursor.getString(6)));
+        track.setOrder(cursor.getInt(7));
 		return track;
 	}
 
@@ -586,6 +589,7 @@ public class DataSource {
 		values.put(DatabaseOpenHelper.COLUMN_MULTIPLE_ENTRIES_PER_DAY, t.multipleEntriesEnabled() ? 1 : 0);
 		values.put(DatabaseOpenHelper.COLUMN_DESCRIPTION, t.getDescription());
 		values.put(DatabaseOpenHelper.COLUMN_ICON, t.getIcon());
+        values.put(DatabaseOpenHelper.COLUMN_LAUNCH_ACTION_INFO, t.getLauncherAction().flattenToString());
 		values.put("\"" + DatabaseOpenHelper.COLUMN_ORDER + "\"", t.getOrder());
 
 		if (t.getId() > 0) {

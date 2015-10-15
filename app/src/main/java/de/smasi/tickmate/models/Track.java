@@ -1,7 +1,10 @@
 package de.smasi.tickmate.models;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.res.Resources;
+
+import de.smasi.tickmate.widgets.LauncherAction;
 
 
 public class Track {
@@ -13,8 +16,8 @@ public class Track {
 	boolean enabled;
 	boolean multiple_entries_enabled;
 	int iconId;
-
 	int order;
+    private LauncherAction mLauncherAction = new LauncherAction();
 
     public Track(String name) {
 		super();
@@ -123,4 +126,40 @@ public class Track {
         return "Group:  id(" + mId + ") name(" + name + ") description(" + description + ")";
     }
 
+
+    // TODO confirm not needed and remove
+    // This is the inverse of getLauncherActionAsString. This is given a string into which
+    //  the info for the launcher action has been encoded; it parses it and inits the fields
+    //  necessary for the launcher action.
+//    public void initLaunchAction(String string) {
+//        mLauncherAction.setComponent(new ComponentName(string.su));
+//
+//    }
+
+
+    public void setLauncherComponent(ComponentName c) {
+        mLauncherAction.setComponent(c);
+    }
+
+    public ComponentName getLauncherComponent() {
+        return mLauncherAction.getComponent();
+    }
+
+    public String getLauncherSummary() {
+        ComponentName cn = mLauncherAction.getComponent();
+        if (cn != null) {
+            return cn.getPackageName();
+            // TODO - low priority - get a user friendly name instead ^^  (See SlimRom's approach)
+        } else {
+            return "No launch action chosen"; // TODO JS move this to strings.xml
+        }
+    }
+
+    public LauncherAction getLauncherAction() {
+        return mLauncherAction;
+    }
+
+    public void setLauncherAction(LauncherAction launcherAction) {
+        mLauncherAction = launcherAction;
+    }
 }

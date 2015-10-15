@@ -40,6 +40,8 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
     public static final String COLUMN_GROUP_ID = "_group_id";
     public static final String COLUMN_MULTIPLE_ENTRIES_PER_DAY = "multiple_entries_per_day";
     public static final String COLUMN_HAS_TIME_INFO = "has_time_info";
+    // Information need to launch the action/intent associated with this track (encoded as string)
+    public static final String COLUMN_LAUNCH_ACTION_INFO = "launch_action_info"; 
 
     private static final String DATABASE_NAME = "tickmate.db";
     private static final int DATABASE_VERSION = 13;
@@ -65,6 +67,7 @@ public class DatabaseOpenHelper extends SQLiteOpenHelper {
         + COLUMN_ICON + " text not null, "
         + COLUMN_ENABLED + " integer not null,"
         + COLUMN_MULTIPLE_ENTRIES_PER_DAY + " integer DEFAULT 0,"
+        + COLUMN_LAUNCH_ACTION_INFO + " text not null, "
         + "\"" + COLUMN_ORDER + "\" integer DEFAULT -1"
         + ");";
     private static final String DATABASE_CREATE_TICKS =
