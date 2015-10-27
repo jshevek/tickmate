@@ -26,8 +26,13 @@ public class Group {
      * @param description group description
      */
     public Group(String name, String description) {
-        mName = name;
-        mDescription = description;
+        if (name != null) {
+            mName = name;
+        }
+
+        if (mDescription != null) {
+            mDescription = description;
+        }
     }
 
     /**
@@ -84,7 +89,7 @@ public class Group {
      */
     public String toString() {
 //        return "Group:  id(" + mId + ") name(" + mName + ") description(" + mDescription + ")  trackIds(" + TextUtils.join(",", mTrackIds) + ")";
-        return "Group:  id(" + mId + ") name(" + mName + ") description(" + mDescription + ")  trackIds(not stored here at the moment)";
+        return "Group:  id(" + mId + ") name(" + mName + ") description(" + mDescription + ")";
     }
 
     /**

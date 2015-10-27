@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<groups>
+    <!-- This file is used to test the groups parser -->
+    <section name="Section 1">
+        <!--Missing a name-->
+        <group
+            description="Group 1 description"/>
+
+        <!--Nested 'section' instead of 'group' -->
+        <section
+            name="Group 2"
+            description="Group 2 description"/>
+    </section>
+    <!--Malformed xml, missing '<' :-->
+    section
+        name="Section 2">
+        <group
+            name="Group 3"
+            description="Group 3 description"/>
+    <!-- Parser will expect groups, but get section-->
+    </section>
+</groups>
+
